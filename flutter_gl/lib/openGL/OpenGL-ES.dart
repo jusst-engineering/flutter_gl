@@ -103,4 +103,8 @@ class OpenGLES extends OpenGLBase {
   dispose() {
     print(" OpenGLES dispose .... TODO ");
   }
+
+  void disposeCanvas() {
+    // No-op. Needed for web
+  }
 }

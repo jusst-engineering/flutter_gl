@@ -63,6 +63,7 @@ class FlutterGlPlugin extends FlutterGlPlatform {
   }
 
   dispose() {
+    openGL.disposeCanvas();
     return FlutterGlPlatform.instance.dispose_interface(this.textureId!);
   }
 }
