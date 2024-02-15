@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'dart:ui' as ui;
 import 'dart:html';
 
@@ -37,9 +38,7 @@ class OpenGLWeb extends OpenGLBase {
     this.divId = options["divId"];
     this.dpr = options["dpr"];
 
-    final CanvasElement domElement = CanvasElement(
-          width: (width * dpr).toInt(), height: (height * dpr).toInt())
-        ..id = 'canvas-id';
+    final CanvasElement domElement = CanvasElementsProvider.getCanvasElement(width: width, height: height, dpr: dpr);
 
     this.element = domElement;
 
@@ -50,5 +49,32 @@ class OpenGLWeb extends OpenGLBase {
 
   makeCurrent(List<int> egls) {
     // web no need do something
+  }
+
+  void disposeCanvas() {
+    CanvasElementsProvider.disposeCanvasElement(element);
+  }
+}
+
+enum CanvasElementLockStatus {locked, unlocked}
+
+/// Provides CanvasElement by caching previously created elements.
+///
+/// On Flutter Web CanvasElements are not disposed correctly if WebGL context was obtained. Apps stops rendering or
+/// get stuck when the number of used platform views is getting close to 15. By reusing CanvasElements we avoid this
+/// problem unless more than 15 views are active at the same time.
+abstract class CanvasElementsProvider {
+  static Map<CanvasElement, CanvasElementLockStatus> canvasElementsRegistry = {};
+
+  static CanvasElement getCanvasElement({required int width,required  int height,required num dpr}) {
+    final canvasElement = canvasElementsRegistry.entries.firstWhereOrNull((element) => element.value == CanvasElementLockStatus.unlocked)?.key ?? CanvasElement()..id = 'canvas-id';
+    canvasElementsRegistry[canvasElement] = CanvasElementLockStatus.locked;
+    canvasElement.width = (width * dpr).toInt();
+    canvasElement.height = (height * dpr).toInt();
+    return canvasElement;
+  }
+
+  static void disposeCanvasElement(CanvasElement canvasElement) {
+    canvasElementsRegistry[canvasElement] = CanvasElementLockStatus.unlocked;
   }
 }
