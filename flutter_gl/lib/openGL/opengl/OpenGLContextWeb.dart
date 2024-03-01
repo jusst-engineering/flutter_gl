@@ -207,7 +207,12 @@ class OpenGLContextWeb extends OpenGL30Constant {
   }
 
   getUniformLocation(v0, String name) {
-    return gl.getUniformLocation(v0, name);
+    try {
+      final location = gl.getUniformLocation(v0, name);
+      return location;
+    } catch (_) {
+      return null;
+    }
   }
 
   clear(v0) {
